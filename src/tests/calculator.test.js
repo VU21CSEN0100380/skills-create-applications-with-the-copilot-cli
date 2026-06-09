@@ -51,6 +51,25 @@ test('division throws when dividing by zero', () => {
   assert.throws(() => calculator.division(20, 0), /Cannot divide by zero/);
 });
 
+test('modulo returns the remainder of two numbers', () => {
+  assert.equal(calculator.modulo(20, 6), 2);
+  assert.equal(calculator.modulo(-20, 6), -2);
+});
+
+test('power returns the first number raised to the second number', () => {
+  assert.equal(calculator.power(2, 3), 8);
+  assert.equal(calculator.power(9, 0.5), 3);
+});
+
+test('squareRoot returns the square root of a number', () => {
+  assert.equal(calculator.squareRoot(25), 5);
+  assert.equal(calculator.squareRoot(2), Math.sqrt(2));
+});
+
+test('squareRoot throws when passed a negative number', () => {
+  assert.throws(() => calculator.squareRoot(-1), /Cannot calculate square root of a negative number/);
+});
+
 test('calculate supports the four basic operations', () => {
   assert.equal(calculator.calculate('add', 2, 3), 5);
   assert.equal(calculator.calculate('subtract', 10, 4), 6);
@@ -65,8 +84,15 @@ test('calculate accepts math symbols for the four basic operations', () => {
   assert.equal(calculator.calculate('/', 20, 5), 4);
 });
 
+test('calculate supports extended operations', () => {
+  assert.equal(calculator.calculate('modulo', 20, 6), 2);
+  assert.equal(calculator.calculate('power', 2, 3), 8);
+  assert.equal(calculator.calculate('sqrt', 25), 5);
+  assert.equal(calculator.calculate('squareRoot', 16), 4);
+});
+
 test('calculate throws for unsupported operations', () => {
-  assert.throws(() => calculator.calculate('modulo', 10, 3), /Unsupported operation: modulo/);
+  assert.throws(() => calculator.calculate('unknown', 10, 3), /Unsupported operation: unknown/);
 });
 
 test('runCli prints results for valid operations shown in the image', () => {
@@ -100,6 +126,25 @@ test('runCli reports divide-by-zero errors', () => {
     assert.deepEqual(capture.logs, []);
     assert.deepEqual(capture.errors, ['Cannot divide by zero']);
     assert.equal(process.exitCode, 1);
+  } finally {
+    capture.restore();
+    process.exitCode = originalExitCode;
+  }
+});
+
+test('runCli prints results for the extended operations', () => {
+  const originalExitCode = process.exitCode;
+  const capture = captureConsole();
+
+  try {
+    process.exitCode = undefined;
+    calculator.runCli(['modulo', '20', '6']);
+    calculator.runCli(['power', '2', '3']);
+    calculator.runCli(['sqrt', '25']);
+
+    assert.deepEqual(capture.logs, ['2', '8', '5']);
+    assert.deepEqual(capture.errors, []);
+    assert.equal(process.exitCode, undefined);
   } finally {
     capture.restore();
     process.exitCode = originalExitCode;
